@@ -1,5 +1,4 @@
 const fs = require("fs/promises");
-const contacts = require("./contacts.json");
 const path = require("path");
 const res = require("express/lib/response");
 const { nanoid } = require("nanoid");
@@ -12,7 +11,7 @@ const listContacts = async () => {
     let parsedData = JSON.parse(data);
     return parsedData;
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 };
 
