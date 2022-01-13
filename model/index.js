@@ -44,8 +44,7 @@ const removeContact = async (contactId) => {
 
 const updateContact = async (query, update) => {
   try {
-    await Contacts.updateOne(query, update);
-    return await Contacts.findOne(query);
+    return await Contacts.findOneAndUpdate(query, update, {new: true})
   } catch (error) {
     console.log(error.message);
   }
