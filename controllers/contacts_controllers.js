@@ -1,21 +1,5 @@
 const Joi = require("joi");
-
-const schema = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
-  email: Joi.string()
-    .pattern(
-      new RegExp(
-        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-      )
-    )
-    .required(),
-  phone: Joi.string()
-    .min(10)
-    .max(14)
-    .pattern(/^\+?[0-9]+$/)
-        .required(),
-  favorite: Joi.boolean()
-});
+const { contactsSchema } = require("../model/schemas/contacts_schema");
 
 const {
   listContacts,
@@ -27,7 +11,7 @@ const {
 } = require("../model");
 
 const list = async (req, res, next) => {
-  res.json(await listContacts());
+  res.json(await listContacts(req.query));
 };
 
 const get = async (req, res, next) => {
@@ -38,7 +22,7 @@ const get = async (req, res, next) => {
 
 const add = async (req, res, next) => {
   try {
-    Joi.attempt(req.body, schema);
+    Joi.attempt(req.body, contactsSchema);
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
@@ -47,7 +31,7 @@ const add = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   let { deletedCount } = await removeContact({
-   " _id": req.params.contactId,
+    " _id": req.params.contactId,
   });
   if (deletedCount) {
     return res.json({ message: "contact deleted" });
@@ -60,11 +44,11 @@ const update = async (req, res, next) => {
     return res.status(400).json({ message: "missing fields" });
   }
   try {
-    Joi.attempt(req.body, schema);
+    Joi.attempt(req.body, contactsSchema);
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
-    const data = await updateContact({ "_id": req.params.contactId }, req.body);
+  const data = await updateContact({ _id: req.params.contactId }, req.body);
   if (data) {
     return res.json(data);
   }

@@ -1,15 +1,15 @@
-const fs = require("fs/promises");
-const path = require("path");
-const res = require("express/lib/response");
-const Contacts = require("./schema");
-const pathName = path.join(__dirname + "/contacts.json");
+const { Contacts } = require("./schemas/contacts_schema");
+const { User } = require("./schemas/user_schema");
 
-const listContacts = async () => {
+const listContacts = async (query) => {
   try {
-    return await Contacts.find();
-  } catch (error) {
-    console.log(error.message);
-  }
+    const { page, limit } = query;
+    if (page || limit) {
+      const { docs } = await Contacts.paginate({}, { page, limit });
+      return docs;
+    }
+    return await Contacts.find(query);
+  } catch (error) {}
 };
 
 const getContactById = async (contactId) => {
@@ -44,7 +44,7 @@ const removeContact = async (contactId) => {
 
 const updateContact = async (query, update) => {
   try {
-    return await Contacts.findOneAndUpdate(query, update, {new: true})
+    return await Contacts.findOneAndUpdate(query, update, { new: true });
   } catch (error) {
     console.log(error.message);
   }
@@ -59,6 +59,17 @@ const updateStatusContact = async (query, update) => {
   }
 };
 
+const findUser = async (email) => {
+  return await User.findOne({ email });
+};
+const userSignUp = async (user) => {
+  try {
+    return await User.create(user);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   listContacts,
   getContactById,
@@ -66,4 +77,6 @@ module.exports = {
   addContact,
   updateContact,
   updateStatusContact,
+  findUser,
+  userSignUp,
 };
