@@ -1,9 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-const index = require("../../model/index");
-const { json } = require("express/lib/response");
-
 const {
   list,
   get,
@@ -11,7 +8,7 @@ const {
   add,
   update,
   updateFavorite,
-} = require("../../controllers/controllers");
+} = require("../../controllers/contacts_controllers");
 
 router.get("/", list);
 
