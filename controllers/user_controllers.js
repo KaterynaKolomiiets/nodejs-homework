@@ -69,9 +69,19 @@ const getCurrent = (req, res, next) => {
   });
 };
 
+const changeSubscription = async (req, res, next) => {
+  try {
+    Joi.attempt(req.body, joiSchema);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+  // console.log(req.user, req.body)
+ };
+
 module.exports = {
   signUp,
   logIn,
   logOut,
   getCurrent,
+  changeSubscription,
 };

@@ -9,6 +9,7 @@ const {
   logIn,
   logOut,
   getCurrent,
+  changeSubscription
 } = require("../../controllers/user_controllers");
 
 const auth = (req, res, next) => {
@@ -30,5 +31,7 @@ router.post("/login", logIn);
 router.post("/logout", auth, logOut);
 
 router.get("/current", auth, getCurrent);
+
+router.patch("/", auth, changeSubscription)
 
 module.exports = router;
