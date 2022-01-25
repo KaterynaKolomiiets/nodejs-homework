@@ -9,7 +9,8 @@ const {
   logIn,
   logOut,
   getCurrent,
-  changeSubscription
+  changeSubscription,
+  verifyToken,
 } = require("../../controllers/user_controllers");
 
 const auth = (req, res, next) => {
@@ -32,6 +33,8 @@ router.post("/logout", auth, logOut);
 
 router.get("/current", auth, getCurrent);
 
-router.patch("/", auth, changeSubscription)
+router.patch("/", auth, changeSubscription);
+
+router.get("/verify/:verificationToken", verifyToken);
 
 module.exports = router;
