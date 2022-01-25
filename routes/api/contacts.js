@@ -8,7 +8,7 @@ const {
   add,
   update,
   updateFavorite,
-} = require("../../controllers/contacts_controllers");
+} = require("../../model/Contacts/controllers");
 
 router.get("/", list);
 

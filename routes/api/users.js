@@ -9,8 +9,10 @@ const {
   logIn,
   logOut,
   getCurrent,
-  changeSubscription
-} = require("../../controllers/user_controllers");
+  changeSubscription,
+  verifyToken,
+  resendVerificationEmail,
+} = require("../../model/User/controllers");
 
 const auth = (req, res, next) => {
   passport.authenticate("jwt", { session: false }, (err, user) => {
@@ -32,6 +34,10 @@ router.post("/logout", auth, logOut);
 
 router.get("/current", auth, getCurrent);
 
-router.patch("/", auth, changeSubscription)
+router.patch("/", auth, changeSubscription);
+
+router.get("/verify/:verificationToken", verifyToken);
+
+router.post("/verify", resendVerificationEmail);
 
 module.exports = router;
