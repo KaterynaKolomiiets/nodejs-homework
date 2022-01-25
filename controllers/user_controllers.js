@@ -85,28 +85,22 @@ const changeSubscription = async (req, res, next) => {
  };
 
 const updateAvatar = async (req, res, next) => {
-  // Jimp.read(req.file)
-  //   .then((file) => {
-  //     return file
-  //       .resize(250, 250) // resize
-  //       .quality(60) // set JPEG quality
-  //       .greyscale() // set greyscale
-  //       .write("lena-small-bw.jpg"); // save
-  //   })
-  //   .catch((err) => {
-  //     console.error(err);
-  //   });
-// // console.log(file)
-    
     
   const { path: temporaryName } = req.file;
-  // console.log(temporaryName)
   console.log(req.file)
   const format = req.file.filename.split(".")[1]
   const newLocation = path.join(__dirname, "/../public/avatars/", `${req.user.id}.${format}`);
   
   try {
-    await fs.rename(temporaryName, newLocation);
+    Jimp.read(temporaryName)
+      .then((file) => {
+        return file
+          .resize(250, 250)
+          .write(newLocation); 
+      })
+      .catch((err) => {
+        console.error(err);
+      });
     await User.findOneAndUpdate(req.user.id, {"avatarURL": newLocation})
   } catch (err) {
     await fs.unlink(temporaryName);

@@ -221,58 +221,46 @@ var updateAvatar = function updateAvatar(req, res, next) {
     while (1) {
       switch (_context5.prev = _context5.next) {
         case 0:
-          // Jimp.read(req.file)
-          //   .then((file) => {
-          //     return file
-          //       .resize(250, 250) // resize
-          //       .quality(60) // set JPEG quality
-          //       .greyscale() // set greyscale
-          //       .write("lena-small-bw.jpg"); // save
-          //   })
-          //   .catch((err) => {
-          //     console.error(err);
-          //   });
-          // // console.log(file)
-          temporaryName = req.file.path; // console.log(temporaryName)
-
+          temporaryName = req.file.path;
           console.log(req.file);
           format = req.file.filename.split(".")[1];
           newLocation = path.join(__dirname, "/../public/avatars/", "".concat(req.user.id, ".").concat(format));
           _context5.prev = 4;
-          _context5.next = 7;
-          return regeneratorRuntime.awrap(fs.rename(temporaryName, newLocation));
-
-        case 7:
-          _context5.next = 9;
+          Jimp.read(temporaryName).then(function (file) {
+            return file.resize(250, 250).write(newLocation);
+          })["catch"](function (err) {
+            console.error(err);
+          });
+          _context5.next = 8;
           return regeneratorRuntime.awrap(User.findOneAndUpdate(req.user.id, {
             "avatarURL": newLocation
           }));
 
-        case 9:
-          _context5.next = 16;
+        case 8:
+          _context5.next = 15;
           break;
 
-        case 11:
-          _context5.prev = 11;
+        case 10:
+          _context5.prev = 10;
           _context5.t0 = _context5["catch"](4);
-          _context5.next = 15;
+          _context5.next = 14;
           return regeneratorRuntime.awrap(fs.unlink(temporaryName));
 
-        case 15:
+        case 14:
           return _context5.abrupt("return", next(_context5.t0));
 
-        case 16:
+        case 15:
           res.json({
             avatarURL: newLocation,
             status: 200
           });
 
-        case 17:
+        case 16:
         case "end":
           return _context5.stop();
       }
     }
-  }, null, null, [[4, 11]]);
+  }, null, null, [[4, 10]]);
 };
 
 module.exports = {
