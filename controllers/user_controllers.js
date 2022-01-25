@@ -26,7 +26,6 @@ const signUp = async (req, res, next) => {
   }
   try {
     const newUser = new User({ email, password, avatarURL: gravatar.url(email) });
-    console.log(newUser)
     newUser.setPassword(password);
     await newUser.save();
     res.status(201).json({
@@ -65,7 +64,6 @@ const logIn = async (req, res, next) => {
 
 const logOut = async (req, res, next) => {
   await User.findOneAndUpdate(req.user.email, { token: null });
-  console.log(req.user);
   return res.status(204).json();
 };
 
@@ -87,10 +85,9 @@ const changeSubscription = async (req, res, next) => {
 const updateAvatar = async (req, res, next) => {
     
   const { path: temporaryName } = req.file;
-  console.log(req.file)
   const format = req.file.filename.split(".")[1]
   const newLocation = path.join(__dirname, "/../public/avatars/", `${req.user.id}.${format}`);
-  
+  const url = `http://localhost:3000/avatars/${req.user.id}.${format}`;
   try {
     Jimp.read(temporaryName)
       .then((file) => {
@@ -101,12 +98,12 @@ const updateAvatar = async (req, res, next) => {
       .catch((err) => {
         console.error(err);
       });
-    await User.findOneAndUpdate(req.user.id, {"avatarURL": newLocation})
+    await User.findOneAndUpdate(req.user.id, {"avatarURL": url})
   } catch (err) {
     await fs.unlink(temporaryName);
     return next(err);
   }
-  res.json({ avatarURL: newLocation, status: 200 });
+  res.json({ avatarURL: url, status: 200 });
 }
 
 module.exports = {
