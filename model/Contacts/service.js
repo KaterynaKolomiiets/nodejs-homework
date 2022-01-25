@@ -1,5 +1,4 @@
-const { Contacts } = require("./schemas/contacts_schema");
-const { User } = require("./schemas/user_schema");
+const { Contacts } = require("./schema");
 
 const listContacts = async (query) => {
   try {
@@ -59,25 +58,6 @@ const updateStatusContact = async (query, update) => {
   }
 };
 
-const findUser = async (email) => {
-  return await User.findOne({ email });
-};
-
-findByToken = async (token) => {
-  console.log(token)
-  return await User.findOne({ 'verificationToken': token })
-  
-}
-
-
-const userSignUp = async (user) => {
-  try {
-    return await User.create(user);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 module.exports = {
   listContacts,
   getContactById,
@@ -85,7 +65,4 @@ module.exports = {
   addContact,
   updateContact,
   updateStatusContact,
-  findUser,
-  findByToken,
-  userSignUp,
 };

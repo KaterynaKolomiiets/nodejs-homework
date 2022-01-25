@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { contactsSchema } = require("../model/schemas/contacts_schema");
+const { contactsSchema } = require("./schema");
 
 const {
   listContacts,
@@ -8,7 +8,7 @@ const {
   addContact,
   updateContact,
   updateStatusContact,
-} = require("../model");
+} = require("./service");
 
 const list = async (req, res, next) => {
   res.json(await listContacts(req.query));

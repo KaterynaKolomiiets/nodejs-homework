@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const mongoose = require("../db");
+const mongoose = require("../../db");
 const mongoosePaginate = require("mongoose-paginate-v2");
 
 const Schema = mongoose.Schema;
@@ -29,7 +29,6 @@ const contacts = new Schema({
 contacts.plugin(mongoosePaginate);
 
 const Contacts = mongoose.model("contact", contacts);
-
 
 const contactsSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),

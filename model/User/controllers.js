@@ -2,14 +2,35 @@ const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const secret = process.env.SECRET;
 const { nanoid } = require("nanoid");
-// new
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-// new
 
-const { findUser, findByToken } = require("../model");
+const { findUser, sendVerificationEmail } = require("./service");
 
-const { User, joiSchema } = require("../model/schemas/user_schema");
+const { User} = require("./schema");
+
+const joiSchema = Joi.object({
+  email: Joi.string()
+    .pattern(
+      new RegExp(
+        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+      )
+    )
+    .required(),
+  password: Joi.string()
+    .min(5)
+    .max(28)
+    .pattern(/^\+?[0-9]+$/)
+    .required(),
+});
+
+const joiPasswordSchema = Joi.object({
+  email: Joi.string()
+    .pattern(
+      new RegExp(
+        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+      )
+    )
+    .required(),
+});
 
 
 const signUp = async (req, res, next) => {
@@ -27,26 +48,7 @@ const signUp = async (req, res, next) => {
     const newUser = new User({ email, password, verificationToken: nanoid() });
     newUser.setPassword(password);
     await newUser.save();
-    // move
-
-    const msg = {
-      to: email,
-      from: 'kateryna-kolomiiets@meta.ua',
-      subject: "Sending with SendGrid is Fun",
-      text: "and easy to do anywhere, even with Node.js",
-      html: "<strong>and easy to do anywhere, even with Node.js</strong>",
-    };
-console.log(msg)
-    sgMail
-      .send(msg)
-      .then(() => {
-        console.log("Email sent");
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    // move
+    await sendVerificationEmail(email, newUser.verificationToken)
     res.status(201).json({
       email: newUser.email,
       subscription: newUser.subscription,
@@ -84,7 +86,6 @@ const logIn = async (req, res, next) => {
 const logOut = async (req, res, next) => {
   console.log(req.user.email);
   await User.findOneAndUpdate(req.user.email, { token: null });
-  console.log(req.user);
   return res.status(204).json();
 };
 
@@ -101,21 +102,42 @@ const changeSubscription = async (req, res, next) => {
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
-  // console.log(req.user, req.body)
 };
  
 
 
 const verifyToken = async (req, res, next) => {
   try {
-    const user = await findByToken(req.params.verificationToken);
+    const user = await findUser(req.params.verificationToken);
     if (!user) {
       return res.status(404).json("User not found");
     }
-    user.verificationToken = null,
-    user.verify = true;
+    await User.updateOne({ verificationToken: req.params.verificationToken }, { verify: true, verificationToken: null});
     return res.status(200).json('Verification successful');
   } catch (err) {
+    console.log(err)
+  }
+}
+
+const resendVerificationEmail = async (req, res, next) => {
+   try {
+     Joi.attempt(req.body, joiPasswordSchema);
+   } catch (err) {
+     return res.status(400).json({ message: err.message });
+   }
+  if (!req.body.email) {
+    return res.status(400).json({ message: "missing required field email" });
+  }
+  try {
+    const user = await User.findOne({ "email": req.body.email });
+    console.log(user.verify)
+    if (user.verify) {
+return res.status(400).json({ message: "Verification has already been passed"})
+    }
+    await sendVerificationEmail(req.body.email, user.verificationToken);
+    return res.status(200).json({ message: "Verification email sent" });
+  }
+  catch (err) {
     console.log(err)
   }
 }
@@ -127,4 +149,5 @@ module.exports = {
   getCurrent,
   changeSubscription,
   verifyToken,
+  resendVerificationEmail,
 };

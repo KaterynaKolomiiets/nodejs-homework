@@ -1,4 +1,4 @@
-const mongoose = require("../db");
+const mongoose = require("../../db");
 const bcrypt = require("bcryptjs");
 const Joi = require("joi");
 
@@ -29,8 +29,8 @@ const userSchema = new Schema({
   },
   verificationToken: {
     type: String,
-    required: [true, 'Verify token is required'],
-  },  
+    required: [true, "Verify token is required"],
+  },
 });
 
 userSchema.methods.setPassword = function (password) {
@@ -43,20 +43,4 @@ userSchema.methods.validPassword = function (password) {
 
 const User = mongoose.model("user", userSchema);
 
-//
-const joiSchema = Joi.object({
-  email: Joi.string()
-    .pattern(
-      new RegExp(
-        "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-      )
-    )
-    .required(),
-  password: Joi.string()
-    .min(5)
-    .max(28)
-    .pattern(/^\+?[0-9]+$/)
-    .required(),
-});
-
-module.exports = { User, joiSchema };
+module.exports = { User};
