@@ -1,10 +1,17 @@
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
+// new
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs").promises;
+const Jimp = require("jimp");
+// new
 const secret = process.env.SECRET;
 
 const { findUser } = require("../model");
 
 const { User, joiSchema } = require("../model/schemas/user_schema");
+const { resize } = require("jimp");
 
 const signUp = async (req, res, next) => {
   try {
@@ -18,7 +25,8 @@ const signUp = async (req, res, next) => {
     return res.status(409).json({ message: "Email in use" });
   }
   try {
-    const newUser = new User({ email, password });
+    const newUser = new User({ email, password, avatarURL: gravatar.url(email) });
+    console.log(newUser)
     newUser.setPassword(password);
     await newUser.save();
     res.status(201).json({
@@ -56,7 +64,6 @@ const logIn = async (req, res, next) => {
 };
 
 const logOut = async (req, res, next) => {
-  console.log(req.user.email);
   await User.findOneAndUpdate(req.user.email, { token: null });
   console.log(req.user);
   return res.status(204).json();
@@ -75,8 +82,38 @@ const changeSubscription = async (req, res, next) => {
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
-  // console.log(req.user, req.body)
  };
+
+const updateAvatar = async (req, res, next) => {
+  // Jimp.read(req.file)
+  //   .then((file) => {
+  //     return file
+  //       .resize(250, 250) // resize
+  //       .quality(60) // set JPEG quality
+  //       .greyscale() // set greyscale
+  //       .write("lena-small-bw.jpg"); // save
+  //   })
+  //   .catch((err) => {
+  //     console.error(err);
+  //   });
+// // console.log(file)
+    
+    
+  const { path: temporaryName } = req.file;
+  // console.log(temporaryName)
+  console.log(req.file)
+  const format = req.file.filename.split(".")[1]
+  const newLocation = path.join(__dirname, "/../public/avatars/", `${req.user.id}.${format}`);
+  
+  try {
+    await fs.rename(temporaryName, newLocation);
+    await User.findOneAndUpdate(req.user.id, {"avatarURL": newLocation})
+  } catch (err) {
+    await fs.unlink(temporaryName);
+    return next(err);
+  }
+  res.json({ avatarURL: newLocation, status: 200 });
+}
 
 module.exports = {
   signUp,
@@ -84,4 +121,5 @@ module.exports = {
   logOut,
   getCurrent,
   changeSubscription,
+  updateAvatar,
 };
