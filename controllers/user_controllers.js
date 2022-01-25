@@ -1,13 +1,18 @@
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const secret = process.env.SECRET;
-const { nanoid }  = require("nanoid");
+const { nanoid } = require("nanoid");
+// new
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// new
 
 const { findUser, findByToken } = require("../model");
 
 const { User, joiSchema } = require("../model/schemas/user_schema");
+
+
 const signUp = async (req, res, next) => {
-  
   try {
     Joi.attempt(req.body, joiSchema);
   } catch (err) {
@@ -22,6 +27,26 @@ const signUp = async (req, res, next) => {
     const newUser = new User({ email, password, verificationToken: nanoid() });
     newUser.setPassword(password);
     await newUser.save();
+    // move
+
+    const msg = {
+      to: email,
+      from: 'kateryna-kolomiiets@meta.ua',
+      subject: "Sending with SendGrid is Fun",
+      text: "and easy to do anywhere, even with Node.js",
+      html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+    };
+console.log(msg)
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // move
     res.status(201).json({
       email: newUser.email,
       subscription: newUser.subscription,
@@ -82,17 +107,14 @@ const changeSubscription = async (req, res, next) => {
 
 
 const verifyToken = async (req, res, next) => {
-  // console.log(req.params.verificationToken);
   try {
     const user = await findByToken(req.params.verificationToken);
     if (!user) {
       return res.status(404).json("User not found");
     }
     user.verificationToken = null,
-      user.verify = true;
-    // сохранить изменения пользователя в базу?
+    user.verify = true;
     return res.status(200).json('Verification successful');
-    console.log(user)
   } catch (err) {
     console.log(err)
   }
