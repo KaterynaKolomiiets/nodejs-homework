@@ -3,13 +3,15 @@ const router = express.Router();
 const passport = require("passport");
 require("dotenv").config();
 require("../../config/config-passport");
+const multer = require("../../multer");
 
 const {
   signUp,
   logIn,
   logOut,
   getCurrent,
-  changeSubscription
+  changeSubscription,
+  updateAvatar,
 } = require("../../controllers/user_controllers");
 
 const auth = (req, res, next) => {
@@ -32,6 +34,8 @@ router.post("/logout", auth, logOut);
 
 router.get("/current", auth, getCurrent);
 
-router.patch("/", auth, changeSubscription)
+router.patch("/", auth, changeSubscription);
+
+router.patch("/avatars", auth, multer.single("picture"), updateAvatar)
 
 module.exports = router;
